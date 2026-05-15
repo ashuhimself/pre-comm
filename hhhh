@@ -1,0 +1,4 @@
+You said: Good point Luke.
+Good point Luke. The new conf keys are already asserted in TestComputeEngineSubmitOperatorExecute (all spark.hadoop.fs.s3a.* keys, path.style.access, ssl.enabled, maxPartitionBytes, spark.driver.host).
+
+Moving the whole conf to __init__ isn't straightforward — credentials, endpoint and hostname are only resolvable at runtime via the S3Hook and socket calls. If you want, I can split it: keep static keys (path.style.access, ssl.enabled, maxPartitionBytes) in __init__, and only resolve the dynamic ones in execute(). Let me know which you prefer
