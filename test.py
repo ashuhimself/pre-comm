@@ -35,12 +35,13 @@ class TestComputeEngineSubmitOperatorInit:
         op = _make_operator(compute_engine_conn_id="my_conn")
         assert op._conf["spark.hadoop.fs.s3a.access.key"] == "{{ conn.my_conn.login }}"
         assert op._conf["spark.hadoop.fs.s3a.secret.key"] == "{{ conn.my_conn.password }}"
-        assert op._conf["spark.hadoop.fs.s3a.endpoint"] == "{{ conn.my_conn.extra_dejson.endpoint_url }}"
+        assert op._conf["spark.hadoop.fs.s3a.endpoint"] == "{{ conn.my_conn.extra_dejson.endpoint }}"
 
     def test_jinja_templates_update_when_conn_id_changes(self):
-        """Different conn_id must produce different template strings."""
         op = _make_operator(compute_engine_conn_id="other_conn")
         assert op._conf["spark.hadoop.fs.s3a.access.key"] == "{{ conn.other_conn.login }}"
+        assert op._conf["spark.hadoop.fs.s3a.secret.key"] == "{{ conn.other_conn.password }}"
+        assert op._conf["spark.hadoop.fs.s3a.endpoint"] == "{{ conn.other_conn.extra_dejson.endpoint }}"
 
     def test_static_conf_values_injected(self):
         op = _make_operator()
@@ -50,15 +51,12 @@ class TestComputeEngineSubmitOperatorInit:
 
     def test_caller_conf_takes_precedence_over_ce_defaults(self):
         caller_conf = {
-            "spark.hadoop.fs.s3a.path.style.access": "false",   # override
-            "spark.some.custom.key": "custom_value",            # extra
+            "spark.hadoop.fs.s3a.path.style.access": "false",
+            "spark.some.custom.key": "custom_value",
         }
         op = _make_operator(conf=caller_conf)
-        # caller override wins
         assert op._conf["spark.hadoop.fs.s3a.path.style.access"] == "false"
-        # caller extra key preserved
         assert op._conf["spark.some.custom.key"] == "custom_value"
-        # CE defaults still present for non-overridden keys
         assert op._conf["spark.hadoop.fs.s3a.connection.ssl.enabled"] == "true"
 
     def test_empty_caller_conf_leaves_ce_defaults_intact(self):
@@ -68,7 +66,6 @@ class TestComputeEngineSubmitOperatorInit:
 
     def test_no_caller_conf_uses_only_ce_defaults(self):
         op = _make_operator()
-        # All CE default keys must be present
         for key in [
             "spark.hadoop.fs.s3a.access.key",
             "spark.hadoop.fs.s3a.secret.key",
