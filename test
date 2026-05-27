@@ -1,0 +1,5 @@
+Add the Airflow Variable mongodb_open_banking_tls_key in ITG and STG environments.
+This variable holds the mTLS certificate required for the MongoDB Open Banking connection to function correctly.
+Acceptance Criteria
+Variable mongodb_open_banking_tls_key is added in ITG
+Variable mongodb_open_banking_tls_key is added in STG
