@@ -1,0 +1,25 @@
+Step
+Description
+Assigned to
+Duration
+Dependencies
+F1
+Confirm mongodb_open_banking_tls_key variable no longer exists in Vault
+@Oliver Bathgate @Amy Rogers
+1m
+E2
+F2
+Confirm MongoDB DAGs can no longer connect using the new hook (expected failure)
+@Ashutosh Tiwari
+1m
+E2
+F3
+Confirm DOSMongoHook code is reverted to previous version in the repo
+@Ashutosh Tiwari
+1m
+E1
+F4
+Confirm MongoDB DAGs run successfully with the reverted DOSMongoHook implementation
+@Ashutosh Tiwari
+1m
+E1
