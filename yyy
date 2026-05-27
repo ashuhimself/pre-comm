@@ -1,0 +1,16 @@
+Step
+Description
+Assigned to
+Duration
+E1
+Revert the DOSMongoHook code change (restore @classmethod with hardcoded mtls_var_id & mtls_path)
+@Ashutosh Tiwari
+2 mins
+E2
+Delete variable mongodb_open_banking_tls_key from ITG & STG via Airflow UI
+@Ashutosh Tiwari
+2 mins
+E3
+Remove temp cert file /tmp/mongodb_open_banking.pem from Airflow worker if exists
+@Ashutosh Tiwari
+2 mins
