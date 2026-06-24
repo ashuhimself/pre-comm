@@ -32,11 +32,10 @@ def loaniq_poc():
     @task_group(group_id="process")            # per-file mapped boundary -> 1:1 isolation
     def process(file_cfg):
 
-        # ===================== INGEST stage (multi-task) =====================
+        # ============== Task-Ingest (KPO anz-duckdb) ==============
         with TaskGroup(group_id="ingest") as ingest:
-            start = EmptyOperator(task_id="start")
-            copy_to_ingest = MockDuckDbOperator(
-                task_id="copy_to_ingest",
+            data_acquisition = MockDuckDbOperator(
+                task_id="data_acquisition",                       # -> S3 Ingest
                 query=INGEST_SQL,
                 parameters={
                     "source_path": "{{ CFG.common.prefix_landing }}/{{ CFG.files[ti.map_index].name_prefix }}*",
@@ -47,17 +46,15 @@ def loaniq_poc():
                     "force_fail":  "{{ CFG.files[ti.map_index].force_fail | default(False) }}",
                 },
             )
-            archive = EmptyOperator(task_id="archive")
-            start >> copy_to_ingest >> archive
+            data_archive = EmptyOperator(task_id="data_archive")  # -> S3 Archive
+            data_acquisition >> data_archive
 
-        # =============== optional standalone task(s) BETWEEN stages ===============
-        bridge = EmptyOperator(task_id="post_ingest_check")
-
-        # =================== STANDARDISE stage (multi-task) ===================
+        # ============== Task-Standardize (KPO anz-duckdb) ==============
         with TaskGroup(group_id="standardise") as standardise:
-            schema_validation = EmptyOperator(task_id="schema_validation")
-            copy_to_standardise = MockDuckDbOperator(
-                task_id="copy_to_standardise",
+            source_data_extract_sql = EmptyOperator(task_id="source_data_extract_sql")
+            start_quarantine_step   = EmptyOperator(task_id="start_quarantine_step")
+            standardize_data = MockDuckDbOperator(
+                task_id="standardize_data",
                 query=STD_SQL,
                 parameters={
                     "source_path":   "{{ CFG.files[ti.map_index].dest_ingest }}/{{ CFG.files[ti.map_index].name_prefix }}.parquet",
@@ -68,11 +65,11 @@ def loaniq_poc():
                     "ignore_errors": True,
                 },
             )
-            dq_check = EmptyOperator(task_id="dq_check")
-            schema_validation >> copy_to_standardise >> dq_check
+            convert_to_parquet = EmptyOperator(task_id="convert_to_parquet")  # -> S3 transform
+            source_data_extract_sql >> start_quarantine_step >> standardize_data >> convert_to_parquet
 
-        # group -> task -> group, all per-file
-        ingest >> bridge >> standardise
+        # per-file: entire ingest group -> entire standardise group
+        ingest >> standardise
 
     # map the GROUP over the whole files list — config passed directly, no loop
     process.expand(file_cfg=CFG["files"])
