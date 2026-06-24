@@ -1,0 +1,21 @@
+common:
+  prefix_landing: "landing/loaniq"
+  delimiter: "|"
+  header: true
+  all_varchar: true
+  query_ingest: "copy_to_ingest.sql"
+  query_standardise: "copy_to_standardise.sql"
+
+files:
+  - name_prefix: "LOANIQ_NZ_Otstndng"
+    dest_ingest: "data-nz-r-loaniq/outstanding"
+    dest_standardise: "data-nz-c-loaniq/outstanding"
+    force_fail: true
+
+  - name_prefix: "LOANIQ_NZ_OtstndngClssfr"
+    dest_ingest: "data-nz-r-loaniq/outstanding"
+    dest_standardise: "data-nz-c-loaniq/outstanding"
+
+  - name_prefix: "LOANIQ_NZ_PrtyClssfr"
+    dest_ingest: "data-nz-r-loaniq/party"
+    dest_standardise: "data-nz-c-loaniq/party"
