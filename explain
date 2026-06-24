@@ -1,0 +1,16 @@
+Here's something you can send as-is:
+
+---
+
+**On the diagram:** Really like the layout — one thing on feasibility before we build it. Drawing `Ingest` and `Standardize` as two separate mapped groups with an arrow between them won't give us per-file isolation: Airflow can only read that arrow as *all-to-all*, so every standardize waits for every ingest, and one bad file blocks all of them. There's no native way to wire `Ingest[i] → Standardize[i]` across two separate mapped groups.
+
+**So both stages need to sit inside one per-file mapped unit. Two ways to do that:**
+
+- **Option A (flat):** One `process` group per file with `ingest → standardise` as single tasks inside. *Reason: simplest, full isolation — but no room for the sub-tasks you've drawn.*
+- **Option B (nested):** One `process` group per file containing `ingest` and `standardise` **sub-groups**, each with their own steps. *Reason: keeps your exact `Task-Ingest`/`Task-Standardize` boxes and sub-tasks, with full per-file isolation — only difference is they nest under the file boundary instead of sitting side by side.*
+
+**Recommendation: Option B** — it matches your design 1:1, just reshaped so the isolation actually holds.
+
+---
+
+Want me to attach the corrected Option B diagram so the reshaping is visual for him?
